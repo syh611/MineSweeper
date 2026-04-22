@@ -1,0 +1,67 @@
+name: Build Release Assets
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Flutter pub get
+        working-directory: flutter_app
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: flutter_app
+        run: flutter build apk --release
+
+      - name: Build Web
+        working-directory: flutter_app
+        run: flutter build web --release
+
+      - name: Prepare dist bundle
+        run: |
+          rm -rf dist_ci
+          mkdir -p dist_ci/downloads dist_ci/web
+          cp -R landing_page/* dist_ci/
+          cp flutter_app/build/app/outputs/flutter-apk/app-release.apk dist_ci/downloads/app-release.apk
+          cp -R flutter_app/build/web/* dist_ci/web/
+          sed -i 's|/downloads/couple-task-latest.apk|./downloads/app-release.apk|g' dist_ci/index.html || true
+          sed -i 's|https://your-web-demo-url.example.com|./web/index.html|g' dist_ci/index.html || true
+
+      - name: Zip assets
+        run: |
+          cd dist_ci
+          zip -r ../download-site.zip .
+          cd ..
+          cp flutter_app/build/app/outputs/flutter-apk/app-release.apk app-release.apk
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: couple-task-release-assets
+          path: |
+            app-release.apk
+            download-site.zip
+
+      - name: Upload release assets (tag only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app-release.apk
+            download-site.zip

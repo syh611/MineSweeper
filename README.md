@@ -2,6 +2,24 @@
 
 
 
+
+## 00. 没有 Git、没有开发环境的最简方式（直接点链接下载）
+
+你不需要安装 Git / Flutter / Python。
+
+### 方案 A：GitHub Releases（最推荐）
+1. 打开仓库的 **Releases** 页面。
+2. 下载：
+   - `app-release.apk`（安卓安装包）
+   - `download-site.zip`（下载落地页 + Web 预览）
+
+### 方案 B：GitHub Actions 构建产物
+1. 打开仓库 **Actions** → `Build Release Assets`。
+2. 点击 `Run workflow`。
+3. 构建完成后，在该次运行页面下载 `couple-task-release-assets`。
+
+> 仓库已内置自动构建工作流：`.github/workflows/build_release.yml`。
+
 ## 0. 你要的“直接可运行 + 点击下载”最快方式
 
 只要你本机有 Flutter，执行两条命令：
